@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SequelizeModule } from '@nestjs/sequelize';
-
-import { User } from './users/user.model';
-import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import { UsersModule } from './users/users.module';
+import { CompaniesModule } from './companies/companies.module';
 
 
 @Module({
@@ -26,7 +26,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
       inject: [ConfigService],
     }),
-    UsersModule
+    UsersModule,
+    CompaniesModule
   ],
   controllers: [AppController],
   providers: [AppService],
