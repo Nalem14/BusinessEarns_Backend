@@ -1,6 +1,7 @@
 import sequelize from 'sequelize';
 import { AllowNull, Column, CreatedAt, HasMany, IsDate, IsEmail, Length, Model, NotEmpty, Table, Unique, UpdatedAt } from 'sequelize-typescript';
 import { Company } from '../../companies/models/company.model';
+import * as bcrypt from 'bcrypt';
 
 @Table
 export class User extends Model {
@@ -22,6 +23,25 @@ export class User extends Model {
   @Unique
   @Column
   email: string;
+
+  @AllowNull(false)
+  @NotEmpty
+  @Length({msg: "The password must be 8 characters min and 32 characters max", min: 8, max: 32})
+  @Column(sequelize.VIRTUAL)
+  get password(): string {
+    return this.getDataValue('password_hash');
+  }
+  set password(value: string) {
+    this.setDataValue("password", value);
+    
+    const hash = bcrypt.hashSync(value, 10);
+    this.setDataValue("password_hash", hash);
+  }
+
+  @AllowNull(false)
+  @NotEmpty
+  @Column
+  password_hash: string;
 
   @IsDate
   @AllowNull(false)
