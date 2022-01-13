@@ -27,13 +27,15 @@ export class User extends Model {
   @AllowNull(false)
   @NotEmpty
   @Length({msg: "The password must be 8 characters min and 32 characters max", min: 8, max: 32})
-  @Column
+  @Column(sequelize.VIRTUAL)
   get password(): string {
     return this.getDataValue('password_hash');
   }
   set password(value: string) {
+    this.setDataValue("password", value);
+    
     const hash = bcrypt.hashSync(value, 10);
-    this.setDataValue("password_hash", value);
+    this.setDataValue("password_hash", hash);
   }
 
   @AllowNull(false)

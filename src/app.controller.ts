@@ -1,4 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Redirect } from '@nestjs/common';
+import { ApiHideProperty, ApiMovedPermanentlyResponse } from '@nestjs/swagger';
 import { AppService } from './app.service';
 import { Guest } from './auth/public.decorator';
 
@@ -8,7 +9,8 @@ export class AppController {
 
   @Guest()
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
+  @ApiHideProperty()
+  @ApiMovedPermanentlyResponse()
+  @Redirect("/api")
+  home(): void { }
 }
