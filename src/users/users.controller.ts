@@ -9,6 +9,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 import { PublicUserDto } from './dto/public-user-dto';
 import { ProfileUserDto } from './dto/profile-user-dto';
+import { User } from './models/user.model';
 
 @ApiTags("Users")
 @ApiBearerAuth()
@@ -22,6 +23,7 @@ export class UsersController {
   @ApiOkResponse({ description: "Login success. Return a bearer token to be used for every protected routes.", schema: { properties: { access_token: { example: "TFrsdtngqelrgSEHTDswefgrbqesh" } } } })
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
+  @Guest()
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
   async login(@Request() req): Promise<{ access_token: string; }> {
@@ -42,8 +44,8 @@ export class UsersController {
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Get('profile')
-  getProfile(@Request() req): any {
-    return req.user;
+  async getProfile(@Request() req): Promise<User> {
+    return await this.usersService.findOne(req.user.userId);
   }
 
   @ApiOperation({summary: "Get users list", description: "Return all users in array"})

@@ -15,10 +15,10 @@ import { JwtModule } from '@nestjs/jwt';
     imports: [ConfigModule],
     useFactory: async (configService: ConfigService) => ({
       secret: configService.get("APP_KEY", null),
-      signOptions: { expiresIn: '30D' },
+      signOptions: { expiresIn: '30d' },
     }),
     inject: [ConfigService]
-  }),],
+  })],
   controllers: [UsersController],
   providers: [UsersService, AuthService, JwtStrategy, LocalStrategy, ConfigService],
   exports: [UsersService],
