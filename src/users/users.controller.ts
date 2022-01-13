@@ -10,12 +10,25 @@ import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 import { PublicUserDto } from './dto/public-user-dto';
 import { ProfileUserDto } from './dto/profile-user-dto';
 import { User } from './models/user.model';
+import { PoliciesGuard } from 'src/casl/PoliciesGuard';
+import { CheckPolicies } from 'src/casl/check-policy.decorator';
+import { AppAbility } from 'src/casl/casl-ability.factory';
+import { Action } from 'src/auth/enums';
 
 @ApiTags("Users")
 @ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService, private authService: AuthService) {}
+
+  @ApiOperation({summary: "Create a user", description: "Create user from received inputs"})
+  @ApiCreatedResponse({ description: "User created" })
+  @ApiInternalServerErrorResponse({ description: "Internal server error. Check all fields is valid." })
+  @Guest()
+  @Post()
+  async create(@Body() createUserDto: CreateUserDto) {
+    await this.usersService.create(createUserDto);
+  }
 
   @ApiOperation({summary: "Login a user", description: "Login user using email and password"})
   @ApiBasicAuth()
@@ -30,22 +43,13 @@ export class UsersController {
     return this.authService.login(req.user);
   }
 
-  @ApiOperation({summary: "Create a user", description: "Create user from received inputs"})
-  @Guest()
-  @ApiCreatedResponse({ description: "User created" })
-  @ApiInternalServerErrorResponse({ description: "Internal server error. Check all fields is valid." })
-  @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    await this.usersService.create(createUserDto);
-  }
-
   @ApiOperation({summary: "Get user profile", description: "Get the profile of the currently auth user"})
   @ApiOkResponse({ description: "Success, return user data", type: ProfileUserDto })
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Get('profile')
   async getProfile(@Request() req): Promise<User> {
-    return await this.usersService.findOne(req.user.userId);
+    return this.usersService.findOne(req.user.userId, true);
   }
 
   @ApiOperation({summary: "Get users list", description: "Return all users in array"})
@@ -53,6 +57,8 @@ export class UsersController {
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Get()
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, User))
   findAll() {
     return this.usersService.findAll();
   }
@@ -62,6 +68,8 @@ export class UsersController {
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @ApiOperation({summary: "Get a user data", description: "Return all data from a specific user"})
   @Get(':id')
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, User))
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
@@ -71,6 +79,8 @@ export class UsersController {
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Patch(':id')
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, User))
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
   }
@@ -80,6 +90,8 @@ export class UsersController {
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Delete(':id')
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, User))
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
   }
