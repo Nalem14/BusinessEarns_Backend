@@ -4,7 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { ApiBasicAuth, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiHideProperty, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
-import { Guest } from 'src/auth/public.decorator';
+import { Guest } from 'src/auth/guest.decorator';
 import { LoginUserDto } from './dto/login-user.dto';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 import { PublicUserDto } from './dto/public-user-dto';
