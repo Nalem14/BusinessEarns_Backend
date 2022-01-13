@@ -8,6 +8,7 @@ export class CompanyEarn extends Model {
     @Column
     amount: number;
   
+    @AllowNull(false)
     @BelongsTo(() => Company, 'companyId')
     company: Company[];
   

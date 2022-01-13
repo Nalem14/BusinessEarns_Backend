@@ -14,6 +14,7 @@ export class Company extends Model {
   @Column
   dailyObjective: number;
 
+  @AllowNull(false)
   @BelongsTo(() => User, "userId")
   user: User;
 
