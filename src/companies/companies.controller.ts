@@ -8,7 +8,6 @@ import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { ReadCompanyDto } from './dto/read-company-dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
-import { Company } from './models/company.model';
 
 @ApiTags("Companies")
 @ApiBearerAuth()

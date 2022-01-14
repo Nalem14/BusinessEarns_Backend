@@ -1,4 +1,3 @@
-import { subject } from "@casl/ability";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { User } from "src/users/models/user.model";
