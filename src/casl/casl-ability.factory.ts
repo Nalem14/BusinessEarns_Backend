@@ -19,6 +19,9 @@ export class CaslAbilityFactory {
       can(Action.Manage, 'all'); // read-write access to everything
     }
 
+    // Everything rules
+    can(Action.Create, 'all');
+
     // User rules
     can(Action.Read, User, { id: user.id });
     can(Action.Update, User, { id: user.id });
