@@ -54,6 +54,11 @@ export class CompaniesService {
     return company.destroy();
   }
 
+
+  /**
+   * Earns
+   */
+
   async createEarn(company: Company, amount: number) {
     const earn = await this.companyEarnModel.create({
       amount: amount
