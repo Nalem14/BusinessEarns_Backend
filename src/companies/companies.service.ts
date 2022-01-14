@@ -22,8 +22,8 @@ export class CompaniesService {
     return company;
   }
 
-  findAll(userId: number|null = null) {
-    if(userId !== null)
+  findAll(userId: number | null = null) {
+    if (userId !== null)
       return this.companyModel.findAll({
         where: {
           userId: userId
@@ -34,7 +34,9 @@ export class CompaniesService {
   }
 
   findOne(id: number) {
-    return this.companyModel.findByPk(id);
+    return this.companyModel.findByPk(id, {
+      include: [User]
+    });
   }
 
   async update(id: number, updateCompanyDto: UpdateCompanyDto) {
@@ -43,7 +45,7 @@ export class CompaniesService {
     company.name = updateCompanyDto.name;
     company.dailyObjective = updateCompanyDto.dailyObjective;
     await company.save();
-    
+
     return company;
   }
 
@@ -65,8 +67,8 @@ export class CompaniesService {
     return company.$get("earns");
   }
 
-  findOneEarn(company: Company, id: number) {
-    const earns = company.$get("earns", {
+  async findOneEarn(company: Company, id: number) {
+    const earns = await company.$get("earns", {
       where: {
         id: id
       }
@@ -80,7 +82,7 @@ export class CompaniesService {
 
     earn.amount = amount;
     await earn.save();
-    
+
     return earn;
   }
 

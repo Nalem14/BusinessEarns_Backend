@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ForbiddenException } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ForbiddenException, ValidationPipe, NotFoundException } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Action } from 'src/auth/enums';
 import { AppAbility } from 'src/casl/casl-ability.factory';
 import { CheckPolicies } from 'src/casl/check-policy.decorator';
@@ -46,9 +46,11 @@ export class CompaniesController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, 'Company'))
   async findOne(@Param('id') id: string, @getUser() auth: User) {
     const company = await this.companiesService.findOne(+id);
+    if (!company)
+      throw new NotFoundException("Company not found");
 
     if (company.user.id != auth.id && !auth.isAdmin)
-      throw new ForbiddenException("You don't have access to this company.");
+      throw new ForbiddenException("You don't have access to this company");
 
     return company;
   }
@@ -81,21 +83,23 @@ export class CompaniesController {
   /**
    * Earns
    */
+
   @ApiOperation({ summary: "Create a company earn", description: "Create a new company earn associated with the specified company" })
   @ApiCreatedResponse({ description: "Success, return earn data", type: Object })
   @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
-  @Post(":companyId")
-  async createEarn(@Param("companyId") companyId: string, @Body() body: any, @getUser() auth: User) {
+  @ApiBody({ type: "application/json", schema: { properties: { amount: { example: 150, title: "The amount to add in euro" } } } })
+  @Post(":companyId/earns")
+  async createEarn(@Param("companyId") companyId: string, @Body("amount") amount: string, @getUser() auth: User) {
     const company = await this.findOne(companyId, auth);
-    return this.companiesService.createEarn(company, body.amount);
+    return this.companiesService.createEarn(company, +amount);
   }
 
   @ApiOperation({ summary: "List all company earns", description: "List all company earns associated with the specified company" })
   @ApiOkResponse({ description: "Success, return company earns data", type: [Object] })
   @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
-  @Get(":companyId")
+  @Get(":companyId/earns")
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, 'Company'))
   async findAllEarn(@Param("companyId") companyId: string, @getUser() auth: User) {
@@ -107,35 +111,41 @@ export class CompaniesController {
   @ApiOkResponse({ description: "Success, return earn data", type: Object })
   @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
-  @Get(':companyId')
+  @Get(':companyId/earns/:id')
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, 'Company'))
-  async findOneEarn(@Param('companyId') companyId: string, @getUser() auth: User) {
+  async findOneEarn(@Param('companyId') companyId: string, @Param('id') id: string, @getUser() auth: User) {
     const company = await this.findOne(companyId, auth);
-    return this.companiesService.findOneEarn(company, +companyId);
+    const earn = await this.companiesService.findOneEarn(company, +id);
+
+    if(!earn)
+      throw new NotFoundException("Earn not found");
+
+    return earn;
   }
 
   @ApiOperation({ summary: "Update a company earn", description: "Update a specific company earn" })
   @ApiOkResponse({ description: "Success, return company earn data", type: Object })
   @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
-  @Patch(':companyId')
+  @ApiBody({ type: "application/json", schema: { properties: { amount: { example: 150, title: "The amount to add in euro" } } } })
+  @Patch(':companyId/earns/:id')
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, 'Company'))
-  async updateEarn(@Param('companyId') companyId: string, @Body() body: any, @getUser() auth: User) {
+  async updateEarn(@Param('companyId') companyId: string, @Param('id') id: string, @Body() body: any, @getUser() auth: User) {
     const company = await this.findOne(companyId, auth);
-    return this.companiesService.updateEarn(company, +companyId, body.amount);
+    return this.companiesService.updateEarn(company, +id, body.amount);
   }
 
   @ApiOperation({ summary: "Delete a company earn", description: "Delete a specific company earn" })
   @ApiOkResponse({ description: "Success, return nothing" })
   @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
-  @Delete(':companyId')
+  @Delete(':companyId/earns/:id')
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, 'Company'))
-  async removeEarn(@Param('companyId') companyId: string, @getUser() auth: User) {
+  async removeEarn(@Param('companyId') companyId: string, @Param('id') id: string, @getUser() auth: User) {
     const company = await this.findOne(companyId, auth);
-    return this.companiesService.removeEarn(company, +companyId);
+    return this.companiesService.removeEarn(company, +id);
   }
 }
