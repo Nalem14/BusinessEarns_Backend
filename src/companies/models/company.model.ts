@@ -6,12 +6,12 @@ import { CompanyEarn } from "./companyEarn.model";
 export class Company extends Model {
   @AllowNull(false)
   @NotEmpty
-  @Length({msg: "Company name must be 3 characters min and 32 characters max", min: 3, max: 32})
+  @Length({ msg: "Company name must be 3 characters min and 32 characters max", min: 3, max: 32 })
   @Column
   name: string;
 
   @AllowNull
-  @Column
+  @Column({ defaultValue: 0 })
   dailyObjective: number;
 
   @BelongsTo(() => User, "userId")

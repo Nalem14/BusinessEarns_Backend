@@ -9,7 +9,7 @@ export class CompanyEarn extends Model {
     amount: number;
   
     @BelongsTo(() => Company, 'companyId')
-    company: Company[];
+    company: Company;
   
     @CreatedAt
     createdAt: Date;
