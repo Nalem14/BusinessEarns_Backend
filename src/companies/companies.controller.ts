@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ForbiddenException, ValidationPipe, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Action } from 'src/auth/enums';
 import { AppAbility } from 'src/casl/casl-ability.factory';
@@ -64,7 +64,7 @@ export class CompaniesController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, 'Company'))
   async update(@Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto, @getUser() auth: User) {
     const company = await this.findOne(id, auth);
-    return this.companiesService.update(+id, updateCompanyDto);
+    return this.companiesService.update(company.id, updateCompanyDto);
   }
 
   @ApiOperation({ summary: "Delete a company", description: "Delete a specific company associated with the logged-in user" })
@@ -76,7 +76,7 @@ export class CompaniesController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, 'Company'))
   async remove(@Param('id') id: string, @getUser() auth: User) {
     const company = await this.findOne(id, auth);
-    return this.companiesService.remove(+id);
+    return this.companiesService.remove(company.id);
   }
 
 
