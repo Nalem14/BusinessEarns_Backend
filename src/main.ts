@@ -28,7 +28,7 @@ async function bootstrap() {
     .addBearerAuth({ type: "http", scheme: "bearer", bearerFormat: "JWT" })
     .addServer("http://localhost:3000", "Local dev #1")
     .addServer("http://localhost:44444", "Local dev #2")
-    .addServer("http://oneill.orion-serv.fr:44444", "Official Production")
+    .addServer("http://oneill.orion-serv.fr:44094", "Official Production")
     .addTag("Users", "Interact with your user account")
     .addTag("Companies", "Interact with your user associed companies")
     .build();
