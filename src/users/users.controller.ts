@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthService } from 'src/auth/auth.service';
-import { ApiBasicAuth, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBasicAuth, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiForbiddenResponse } from '@nestjs/swagger';
 import { Guest } from 'src/auth/guest.decorator';
 import { LoginUserDto } from './dto/login-user.dto';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
@@ -35,7 +35,7 @@ export class UsersController {
   @ApiBasicAuth()
   @ApiBody({ type: LoginUserDto })
   @ApiOkResponse({ description: "Login success. Return a bearer token to be used for every protected routes.", schema: { properties: { access_token: { example: "TFrsdtngqelrgSEHTDswefgrbqesh" } } } })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Guest()
   @UseGuards(LocalAuthGuard)
@@ -46,7 +46,7 @@ export class UsersController {
 
   @ApiOperation({summary: "Get user profile", description: "Get the profile of the currently auth user"})
   @ApiOkResponse({ description: "Success, return user data", type: ProfileUserDto })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Get('profile')
   async getProfile(@Request() req): Promise<User> {
@@ -55,7 +55,7 @@ export class UsersController {
 
   @ApiOperation({summary: "Get users list", description: "Return all users in array"})
   @ApiOkResponse({ description: "Success, return users data array", type: [PublicUserDto] })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, 'User'))
@@ -68,7 +68,7 @@ export class UsersController {
   }
 
   @ApiOkResponse({ description: "Success, return a user data", type: PublicUserDto })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @ApiOperation({summary: "Get a user data", description: "Return all data from a specific user"})
   @Get(':id')
@@ -89,7 +89,7 @@ export class UsersController {
 
   @ApiOperation({summary: "Update a user", description: "Update user with send datas"})
   @ApiOkResponse({ description: "Success, user updated" })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Patch(':id')
   @UseGuards(PoliciesGuard)
@@ -103,7 +103,7 @@ export class UsersController {
 
   @ApiOperation({summary: "Delete a user", description: "Delete a user by id"})
   @ApiOkResponse({ description: "Success, user deleted" })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Delete(':id')
   @UseGuards(PoliciesGuard)

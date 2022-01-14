@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ForbiddenException } from '@nestjs/common';
-import { ApiBearerAuth, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Action } from 'src/auth/enums';
 import { AppAbility } from 'src/casl/casl-ability.factory';
 import { CheckPolicies } from 'src/casl/check-policy.decorator';
@@ -15,20 +15,20 @@ import { UpdateCompanyDto } from './dto/update-company.dto';
 @ApiBearerAuth()
 @Controller('companies')
 export class CompaniesController {
-  constructor(private readonly companiesService: CompaniesService) {}
+  constructor(private readonly companiesService: CompaniesService) { }
 
-  @ApiOperation({summary: "Create a company", description: "Create a new company associated with the logged-in user"})
-  @ApiOkResponse({ description: "Success, return company data", type: ReadCompanyDto })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiOperation({ summary: "Create a company", description: "Create a new company associated with the logged-in user" })
+  @ApiCreatedResponse({ description: "Success, return company data", type: ReadCompanyDto })
+  @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Post()
-  create(@Body() createCompanyDto: CreateCompanyDto) {
-    return this.companiesService.create(createCompanyDto);
+  create(@Body() createCompanyDto: CreateCompanyDto, @getUser() auth: User) {
+    return this.companiesService.create(createCompanyDto, auth);
   }
 
-  @ApiOperation({summary: "List all companies", description: "List all companies associated with the logged-in user"})
+  @ApiOperation({ summary: "List all companies", description: "List all companies associated with the logged-in user" })
   @ApiOkResponse({ description: "Success, return companies data", type: [ReadCompanyDto] })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Get()
   @UseGuards(PoliciesGuard)
@@ -37,9 +37,9 @@ export class CompaniesController {
     return this.companiesService.findAll(!auth.isAdmin ? auth.id : null);
   }
 
-  @ApiOperation({summary: "Get a company", description: "Get specific company associated with the logged-in user"})
+  @ApiOperation({ summary: "Get a company", description: "Get specific company associated with the logged-in user" })
   @ApiOkResponse({ description: "Success, return company data", type: ReadCompanyDto })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Get(':id')
   @UseGuards(PoliciesGuard)
@@ -47,41 +47,95 @@ export class CompaniesController {
   async findOne(@Param('id') id: string, @getUser() auth: User) {
     const company = await this.companiesService.findOne(+id);
 
-    if(company.user.id != auth.id && !auth.isAdmin)
+    if (company.user.id != auth.id && !auth.isAdmin)
       throw new ForbiddenException("You don't have access to this company.");
 
     return company;
   }
 
-  @ApiOperation({summary: "Update a company", description: "Update a specific company associated with the logged-in user"})
+  @ApiOperation({ summary: "Update a company", description: "Update a specific company associated with the logged-in user" })
   @ApiOkResponse({ description: "Success, return company data", type: ReadCompanyDto })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Patch(':id')
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, 'Company'))
   async update(@Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto, @getUser() auth: User) {
     const company = await this.findOne(id, auth);
-
-    if(company.user.id != auth.id && !auth.isAdmin)
-      throw new ForbiddenException("You don't have access to this company.");
-
     return this.companiesService.update(+id, updateCompanyDto);
   }
 
-  @ApiOperation({summary: "Delete a company", description: "Delete a specific company associated with the logged-in user"})
+  @ApiOperation({ summary: "Delete a company", description: "Delete a specific company associated with the logged-in user" })
   @ApiOkResponse({ description: "Success, return nothing" })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Access denied" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Delete(':id')
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, 'Company'))
   async remove(@Param('id') id: string, @getUser() auth: User) {
     const company = await this.findOne(id, auth);
-
-    if(company.user.id != auth.id && !auth.isAdmin)
-      throw new ForbiddenException("You don't have access to this company.");
-
     return this.companiesService.remove(+id);
+  }
+
+
+  /**
+   * Earns
+   */
+  @ApiOperation({ summary: "Create a company earn", description: "Create a new company earn associated with the specified company" })
+  @ApiCreatedResponse({ description: "Success, return earn data", type: Object })
+  @ApiForbiddenResponse({ description: "Access denied" })
+  @ApiInternalServerErrorResponse({ description: "Internal server error" })
+  @Post(":companyId")
+  async createEarn(@Param("companyId") companyId: string, @Body() body: any, @getUser() auth: User) {
+    const company = await this.findOne(companyId, auth);
+    return this.companiesService.createEarn(company, body.amount);
+  }
+
+  @ApiOperation({ summary: "List all company earns", description: "List all company earns associated with the specified company" })
+  @ApiOkResponse({ description: "Success, return company earns data", type: [Object] })
+  @ApiForbiddenResponse({ description: "Access denied" })
+  @ApiInternalServerErrorResponse({ description: "Internal server error" })
+  @Get(":companyId")
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, 'Company'))
+  async findAllEarn(@Param("companyId") companyId: string, @getUser() auth: User) {
+    const company = await this.findOne(companyId, auth);
+    return this.companiesService.findAllEarn(company);
+  }
+
+  @ApiOperation({ summary: "Get a company earn", description: "Get a specific company earn" })
+  @ApiOkResponse({ description: "Success, return earn data", type: Object })
+  @ApiForbiddenResponse({ description: "Access denied" })
+  @ApiInternalServerErrorResponse({ description: "Internal server error" })
+  @Get(':companyId')
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, 'Company'))
+  async findOneEarn(@Param('companyId') companyId: string, @getUser() auth: User) {
+    const company = await this.findOne(companyId, auth);
+    return this.companiesService.findOneEarn(company, +companyId);
+  }
+
+  @ApiOperation({ summary: "Update a company earn", description: "Update a specific company earn" })
+  @ApiOkResponse({ description: "Success, return company earn data", type: Object })
+  @ApiForbiddenResponse({ description: "Access denied" })
+  @ApiInternalServerErrorResponse({ description: "Internal server error" })
+  @Patch(':companyId')
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, 'Company'))
+  async updateEarn(@Param('companyId') companyId: string, @Body() body: any, @getUser() auth: User) {
+    const company = await this.findOne(companyId, auth);
+    return this.companiesService.updateEarn(company, +companyId, body.amount);
+  }
+
+  @ApiOperation({ summary: "Delete a company earn", description: "Delete a specific company earn" })
+  @ApiOkResponse({ description: "Success, return nothing" })
+  @ApiForbiddenResponse({ description: "Access denied" })
+  @ApiInternalServerErrorResponse({ description: "Internal server error" })
+  @Delete(':companyId')
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, 'Company'))
+  async removeEarn(@Param('companyId') companyId: string, @getUser() auth: User) {
+    const company = await this.findOne(companyId, auth);
+    return this.companiesService.removeEarn(company, +companyId);
   }
 }
