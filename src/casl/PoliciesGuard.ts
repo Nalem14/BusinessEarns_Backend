@@ -1,3 +1,4 @@
+import { subject } from "@casl/ability";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { User } from "src/users/models/user.model";
@@ -20,7 +21,7 @@ export class PoliciesGuard implements CanActivate {
       ) || [];
 
     const { user } = context.switchToHttp().getRequest();
-    let userDb = await User.findByPk(user.userId);
+    const userDb = await User.findByPk(user.userId);
     const ability = this.caslAbilityFactory.createForUser(userDb);
 
     return policyHandlers.every((handler) =>

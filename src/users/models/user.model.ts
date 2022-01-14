@@ -1,6 +1,6 @@
-import sequelize from 'sequelize';
-import { AllowNull, Column, CreatedAt, DefaultScope, HasMany, IsDate, IsEmail, Length, Model, NotEmpty, Scopes, Table, Unique, UpdatedAt } from 'sequelize-typescript';
-import { Company } from '../../companies/models/company.model';
+import sequelize from "sequelize";
+import { DefaultScope, Scopes, Table, Model, AllowNull, NotEmpty, Length, Column, IsEmail, Unique, IsDate, HasMany, CreatedAt, UpdatedAt } from "sequelize-typescript";
+import { Company } from "../../companies/models/company.model";
 import * as bcrypt from 'bcrypt';
 
 @DefaultScope(() => ({
@@ -77,4 +77,8 @@ export class User extends Model {
 
   @UpdatedAt
   updatedAt: Date;
+
+  static get modelName() {
+    return "User";
+  }
 }

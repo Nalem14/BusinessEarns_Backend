@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UseGuards, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -14,6 +14,7 @@ import { PoliciesGuard } from 'src/casl/PoliciesGuard';
 import { CheckPolicies } from 'src/casl/check-policy.decorator';
 import { AppAbility } from 'src/casl/casl-ability.factory';
 import { Action } from 'src/auth/enums';
+import { getUser } from './user.decorator';
 
 @ApiTags("Users")
 @ApiBearerAuth()
@@ -56,10 +57,13 @@ export class UsersController {
   @ApiOkResponse({ description: "Success, return users data array", type: [PublicUserDto] })
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
-  @Get()
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, User))
-  findAll() {
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, 'User'))
+  @Get()
+  findAll(@getUser() auth: User) {
+    if(!auth.isAdmin)
+      return new ForbiddenException("Access denied.");
+
     return this.usersService.findAll();
   }
 
@@ -69,9 +73,18 @@ export class UsersController {
   @ApiOperation({summary: "Get a user data", description: "Return all data from a specific user"})
   @Get(':id')
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, User))
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, 'User'))
+  async findOne(@Param('id') id: string, @getUser() auth: User) {
+    const isAdmin = auth.isAdmin;
+
+    const user = await this.usersService.findOne(+id, isAdmin);
+    if(!user)
+      throw new NotFoundException("User not found");
+
+    if(auth.id != user.id && !auth.isAdmin)
+      throw new ForbiddenException("You can't read other user data");
+
+    return user;
   }
 
   @ApiOperation({summary: "Update a user", description: "Update user with send datas"})
@@ -80,8 +93,11 @@ export class UsersController {
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Patch(':id')
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, User))
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, 'User'))
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @getUser() auth: User) {
+    if(!auth.isAdmin && auth.id != id)
+      throw new ForbiddenException("You can't update this user");
+
     return this.usersService.update(+id, updateUserDto);
   }
 
@@ -91,8 +107,11 @@ export class UsersController {
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Delete(':id')
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, User))
-  remove(@Param('id') id: string) {
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, 'User'))
+  remove(@Param('id') id: string, @getUser() auth: User) {
+    if(!auth.isAdmin && auth.id != id)
+      throw new ForbiddenException("You can't update this user");
+
     return this.usersService.remove(+id);
   }
 }

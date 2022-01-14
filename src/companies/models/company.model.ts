@@ -1,6 +1,6 @@
-import { AllowNull, BelongsTo, Column, CreatedAt, HasMany, Length, Model, NotEmpty, Table, UpdatedAt } from 'sequelize-typescript';
-import { User } from 'src/users/models/user.model';
-import { CompanyEarn } from './companyEarn.model';
+import { Table, Model, AllowNull, NotEmpty, Length, Column, BelongsTo, HasMany, CreatedAt, UpdatedAt } from "sequelize-typescript";
+import { User } from "../../users/models/user.model";
+import { CompanyEarn } from "./companyEarn.model";
 
 @Table
 export class Company extends Model {
@@ -25,4 +25,8 @@ export class Company extends Model {
 
   @UpdatedAt
   updatedAt: Date;
+
+  static get modelName() {
+    return "Company";
+  }
 }

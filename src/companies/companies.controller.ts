@@ -31,7 +31,7 @@ export class CompaniesController {
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Get()
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Company))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, 'Company'))
   findAll() {
     return this.companiesService.findAll();
   }
@@ -42,7 +42,7 @@ export class CompaniesController {
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Get(':id')
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Company))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, 'Company'))
   findOne(@Param('id') id: string) {
     return this.companiesService.findOne(+id);
   }
@@ -53,7 +53,7 @@ export class CompaniesController {
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Patch(':id')
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, Company))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Update, 'Company'))
   update(@Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto) {
     return this.companiesService.update(+id, updateCompanyDto);
   }
@@ -64,7 +64,7 @@ export class CompaniesController {
   @ApiInternalServerErrorResponse({ description: "Internal server error" })
   @Delete(':id')
   @UseGuards(PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, Company))
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Delete, 'Company'))
   remove(@Param('id') id: string) {
     return this.companiesService.remove(+id);
   }

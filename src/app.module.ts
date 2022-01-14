@@ -27,6 +27,8 @@ import { CaslModule } from './casl/casl.module';
         password: configService.get("DB_PASS", ""),
         database: configService.get("DB_NAME", "test"),
         autoLoadModels: true,
+        logging: configService.get("APP_ENV", "development") === "development" ? console.log : false,
+        synchronize: configService.get("APP_ENV", "development") === "development" ? true : false
       }),
       inject: [ConfigService],
     }),
@@ -36,7 +38,7 @@ import { CaslModule } from './casl/casl.module';
     CaslModule
   ],
   controllers: [AppController],
-  providers: [AppService, {
+  providers: [{
     provide: APP_GUARD,
     useClass: JwtAuthGuard,
   }],
