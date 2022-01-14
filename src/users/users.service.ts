@@ -19,11 +19,21 @@ export class UsersService {
     return this.userModel.findAll();
   }
 
-  async findOne(id: number | string): Promise<User> {
-    if (Number.isInteger(id))
-      return this.userModel.findByPk(id);
+  async findOne(id: number | string, withPrivate: boolean = false, withSecret : boolean = false): Promise<User> {
+    let it = null;
 
-    return this.userModel.findOne({
+    if(withPrivate)
+      it = this.userModel.scope("private");
+    if(withSecret)
+      it = this.userModel.scope("secret");
+
+    if(!withPrivate && !withSecret)
+      it = this.userModel;
+
+    if (Number.isInteger(id))
+      return it.findByPk(id);
+
+    return it.findOne({
       where: {
         email: id
       }
@@ -32,7 +42,13 @@ export class UsersService {
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
-    return user.update({ updateUserDto });
+    
+    user.firstName = updateUserDto.firstName;
+    user.lastName = updateUserDto.lastName;
+    user.email = updateUserDto.email;
+    await user.save();
+
+    return user;
   }
 
   async remove(id: number): Promise<void> {
