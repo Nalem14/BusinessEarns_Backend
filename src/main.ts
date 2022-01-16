@@ -14,9 +14,6 @@ async function bootstrap() {
    * Include plugins
    */
   app.use(helmet());
-  app.enableCors({
-    origin: configService.get("APP_URL", true)
-  });
 
   /**
    * Swagger
