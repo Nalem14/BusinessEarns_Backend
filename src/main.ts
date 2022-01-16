@@ -14,7 +14,9 @@ async function bootstrap() {
    * Include plugins
    */
   app.use(helmet());
-  app.enableCors();
+  app.enableCors({
+    origin: true
+  });
 
   /**
    * Swagger
