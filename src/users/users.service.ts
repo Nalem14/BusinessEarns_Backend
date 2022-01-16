@@ -41,11 +41,15 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id);
+    const user = await this.findOne(id, true, true);
     
     user.firstName = updateUserDto.firstName;
     user.lastName = updateUserDto.lastName;
     user.email = updateUserDto.email;
+
+    if(updateUserDto.password)
+      user.password = updateUserDto.password;
+
     await user.save();
 
     return user;
