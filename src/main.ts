@@ -3,9 +3,21 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder, SwaggerCustomOptions } from '@nestjs/swagger';
 import helmet from 'helmet';
+import fs from 'fs';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+
+  // SSL options
+  let httpsOptions = {};
+  if(process.env.SSL_KEY && process.env.SSL_CERT) {
+    httpsOptions = {
+      key: fs.readFileSync(process.env.SSL_KEY),
+      cert: fs.readFileSync(process.env.SSL_CERT),
+    };
+  }
+
+  // create app
+  const app = await NestFactory.create(AppModule, { httpsOptions });
 
   // Get configs
   const configService = app.get(ConfigService);
@@ -14,9 +26,7 @@ async function bootstrap() {
    * Include plugins
    */
   app.use(helmet());
-  app.enableCors({
-    origin: true
-  });
+  app.enableCors(configService.get("cors", { origin: true }));
 
   /**
    * Swagger

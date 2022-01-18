@@ -9,26 +9,29 @@ import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { CaslModule } from './casl/casl.module';
-
+import AppConfig from './config/app.config';
+import DbConfig from './config/database.config';
+import CorsConfig from './config/cors.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       cache: true,
-      isGlobal: true,
+      // isGlobal: true,
+      load: [AppConfig, DbConfig, CorsConfig],
     }),
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         dialect: 'mysql',
-        host: configService.get("DB_HOST", "localhost"),
-        port: configService.get("DB_PORT", 3306),
-        username: configService.get("DB_USER", "root"),
-        password: configService.get("DB_PASS", ""),
-        database: configService.get("DB_NAME", "test"),
+        host: configService.get<string>("database.host", "localhost"),
+        port: configService.get<number>("database.port", 3306),
+        username: configService.get<string>("database.user", "root"),
+        password: configService.get<string>("database.pass", ""),
+        database: configService.get<string>("database.name", "test"),
         autoLoadModels: true,
-        logging: configService.get("APP_ENV", "development") === "development" ? console.log : false,
-        synchronize: configService.get("APP_ENV", "development") === "development" ? true : false
+        logging: configService.get<string>("app.environment", "development") === "development" ? console.log : false,
+        synchronize: true
       }),
       inject: [ConfigService],
     }),
