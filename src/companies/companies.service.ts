@@ -59,7 +59,7 @@ export class CompaniesService {
    * Earns
    */
 
-  async createEarn(company: Company, amount: number) {
+  async createEarn(company: Company, amount: string) {
     const earn = await this.companyEarnModel.create({
       amount: amount
     });
@@ -82,7 +82,7 @@ export class CompaniesService {
     return earns[0];
   }
 
-  async updateEarn(company: Company, id: number, amount: number) {
+  async updateEarn(company: Company, id: number, amount: string) {
     const earn = await this.findOneEarn(company, id);
 
     earn.amount = amount;

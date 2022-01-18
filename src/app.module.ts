@@ -15,6 +15,7 @@ import { CaslModule } from './casl/casl.module';
   imports: [
     ConfigModule.forRoot({
       cache: true,
+      isGlobal: true,
     }),
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],

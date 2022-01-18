@@ -92,7 +92,7 @@ export class CompaniesController {
   @Post(":companyId/earns")
   async createEarn(@Param("companyId") companyId: string, @Body("amount") amount: string, @getUser() auth: User) {
     const company = await this.findOne(companyId, auth);
-    return this.companiesService.createEarn(company, +amount);
+    return this.companiesService.createEarn(company, amount);
   }
 
   @ApiOperation({ summary: "List all company earns", description: "List all company earns associated with the specified company" })
