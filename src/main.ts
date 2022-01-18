@@ -9,19 +9,13 @@ async function bootstrap() {
 
   // Get configs
   const configService = app.get(ConfigService);
-  const allowedOrigins = [
-    'capacitor://localhost',
-    'ionic://localhost',
-    'http://localhost',
-    'http://localhost:8080',
-    'http://localhost:8100',
-  ];
+
   /**
    * Include plugins
    */
   app.use(helmet());
   app.enableCors({
-    origin: allowedOrigins
+    origin: true
   });
 
   /**
