@@ -1,5 +1,4 @@
 import { AllowNull, BelongsTo, Column, CreatedAt, Model, NotEmpty, Table, UpdatedAt } from 'sequelize-typescript';
-import { isNumberObject, isStringObject } from 'util/types';
 import { Crypto } from '../../helper/crypto.class';
 import { Company } from './company.model';
 
@@ -16,7 +15,7 @@ export class CompanyEarn extends Model {
     get amount() : string {
         let hash = this.getDataValue("amount");
         hash = JSON.parse(hash);
-        
+
         let value = Crypto.decrypt(hash);
         return value;
     }
